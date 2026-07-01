@@ -6,9 +6,21 @@ import { AppModule } from "../dist/app.module";
 
 const server = express();
 
+function corsMiddleware(req: any, res: any, next: any) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
+    res.header("Access-Control-Allow-Credentials", "true");
+    if (req.method === "OPTIONS") {
+        res.status(204).end();
+        return;
+    }
+    next();
+}
+
 async function bootstrap() {
+    server.use(corsMiddleware);
     const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
-    app.enableCors();
     app.setGlobalPrefix("api");
     app.useGlobalPipes(
         new ValidationPipe({
@@ -22,21 +34,7 @@ async function bootstrap() {
 
 let cachedServer: express.Express;
 
-function setCorsHeaders(res: any) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-}
-
 export default async function handler(req: any, res: any) {
-    setCorsHeaders(res);
-
-    if (req.method === "OPTIONS") {
-        res.status(204).end();
-        return;
-    }
-
     if (!cachedServer) {
         cachedServer = await bootstrap();
     }
