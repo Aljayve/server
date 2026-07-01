@@ -21,5 +21,6 @@
     "strictPropertyInitialization": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "exclude": ["api"]
 }
