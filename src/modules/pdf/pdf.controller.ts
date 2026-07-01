@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from "@nestjs/common";
+import { Body, Controller, HttpException, HttpStatus, Post, Res } from "@nestjs/common";
 import { PdfService } from "./pdf.service";
 import { ExportPdfDto } from "./dto/export-pdf.dto";
 import type { Response } from "express";
@@ -14,14 +14,23 @@ export class PdfController {
         @Body() dto: ExportPdfDto,
         @Res() res: Response,
     ) {
-        const pdf = await this.pdfService.exportResume(dto);
+        try {
+            const pdf = await this.pdfService.exportResume(dto);
 
-        res.set({
-            "Content-Type": "application/pdf",
-            "Content-Disposition": 'attachment; filename="resume.pdf"',
-            "Content-Length": pdf.length,
-        });
+            res.set({
+                "Content-Type": "application/pdf",
+                "Content-Disposition": 'attachment; filename="resume.pdf"',
+                "Content-Length": pdf.length,
+            });
 
-        res.send(pdf);
+            res.send(pdf);
+        } catch (e: any) {
+            throw new HttpException(
+                e?.message ?? "PDF generation failed",
+                e?.message?.includes("not available")
+                    ? HttpStatus.NOT_IMPLEMENTED
+                    : HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
     }
 }

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import * as bcrypt from "bcrypt";
+import * as bcrypt from "bcryptjs";
 
 async function seedAdmin() {
     const uri = process.env.MONGO_URI || "mongodb://localhost:27017/systems";
